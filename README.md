@@ -1,1 +1,1 @@
-# SAT-encoding
+A SAT instance generator.
