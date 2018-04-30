@@ -14,22 +14,34 @@ void preimage(int rounds)
 {
 	SHA1 f(rounds, true, use_xor_clauses, use_normal_adders);
 
-	/* Read the randomly generated input and its hash */
-	unsigned w[80];
-    for( int i=0; i<16; i++ )
-		scanf("%x", &w[i]);
+    unsigned w[80];
+    unsigned hash[5];
 
-	unsigned hash[5];
-    for( int i=0; i<5; i++ )
-        scanf("%x", &hash[i]);
+    if ( use_rand_bit )
+    {
+        for( int i=0; i<16; i++ )
+            w[i] = lrand48();
 
-    unsigned h[5];
-	sha1_comp(w, h, rounds);
-    assert( hash[0] == h[0] );
-    assert( hash[1] == h[1] );
-    assert( hash[2] == h[2] );
-    assert( hash[3] == h[3] );
-    assert( hash[4] == h[4] );
+        sha1_comp(w, hash, rounds);
+    }
+    else
+    {
+        /* Read the randomly generated input and its hash */
+        for( int i=0; i<16; i++ )
+            scanf("%x", &w[i]);
+
+        for( int i=0; i<5; i++ )
+            scanf("%x", &hash[i]);
+
+        /* Double checking the message words with hash target */
+        unsigned h[5];
+        sha1_comp(w, h, rounds);
+        assert( hash[0] == h[0] );
+        assert( hash[1] == h[1] );
+        assert( hash[2] == h[2] );
+        assert( hash[3] == h[3] );
+        assert( hash[4] == h[4] );
+    }
 
 
 	/* Set hash target bits */
