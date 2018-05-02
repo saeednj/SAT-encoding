@@ -161,7 +161,7 @@ void sha256_comp(unsigned w[64], unsigned H[8], int rounds, bool chaining)
 
 
     /*    Extend the first 16 words into the remaining 48 words w[16..63] of the message schedule array: */
-    for( int i=16; i<64; i++ )
+    for( int i=16; i<rounds; i++ )
     {
         unsigned s0 = rotr(w[i-15], 7) ^ rotr(w[i-15], 18) ^ shr(w[i-15], 3);
         unsigned s1 = rotr(w[i-2], 17) ^ rotr(w[i-2], 19) ^ shr(w[i-2], 10);
@@ -180,7 +180,7 @@ void sha256_comp(unsigned w[64], unsigned H[8], int rounds, bool chaining)
     unsigned h = H[7];
 
     /*    Compression function main loop: */
-    for( int i=0; i<64; i++ )
+    for( int i=0; i<rounds; i++ )
     {
         unsigned S1 = rotr(e, 6) ^ rotr(e, 11) ^ rotr(e, 25);
         unsigned ch = (e & f) ^ ((~ e) & g);
