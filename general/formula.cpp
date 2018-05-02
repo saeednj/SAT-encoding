@@ -484,7 +484,7 @@ void Formula::dimacs(bool header)
 
     for( Clause c : clauses )
     {
-        if ( c.xor_clause ) printf("x");
+        if ( c.xor_clause ) printf("x ");
         for( int v : c.lits )
             printf("%d ", v);
         printf("0\n");
