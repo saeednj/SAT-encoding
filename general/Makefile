@@ -1,4 +1,4 @@
-SRCS = formula.cpp util.cpp sha1.cpp
+SRCS = formula.cpp util.cpp sha1.cpp sha256.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = main
 CFLAGS = -std=c++11 -O2
@@ -9,8 +9,9 @@ CFLAGS = -std=c++11 -O2
 all: $(OBJS) $(TARGET).cpp
 	g++ $(OBJS) $(CFLAGS) $(TARGET).cpp -o $(TARGET)
 
-verify: verify-sha1.cpp
+verify: verify-sha1.cpp verify-sha256.cpp
 	g++ $(OBJS) $(CFLAGS) verify-sha1.cpp -o verify-sha1
+	g++ $(OBJS) $(CFLAGS) verify-sha256.cpp -o verify-sha256
 
 clean:
 	rm -f $(OBJS) $(TARGET) verify-sha1
