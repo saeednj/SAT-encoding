@@ -135,7 +135,7 @@ void display_usage()
 
 int main(int argc, char **argv)
 {
-	unsigned long seed = time( NULL );
+    unsigned long seed = time( NULL );
 
     /* Arguments default values */
     cfg_use_xor_clauses = 0;
@@ -159,7 +159,7 @@ int main(int argc, char **argv)
         {0, 0, 0, 0}
     };
 
-	/* Process command line */
+    /* Process command line */
     int c, option_index;
     while( (c = getopt_long(argc, argv, "a:r:f:h", long_options, &option_index)) != -1 )
     {
@@ -207,13 +207,13 @@ int main(int argc, char **argv)
 
             case '?':
 /*                if (optopt == 'r')
-                    fprintf (stderr, "Please specify the number of rounds with -r.\n");
-                else if (isprint (optopt))
-                    fprintf (stderr, "Unknown option `-%c'.\n", optopt);
-                else
-                    fprintf (stderr,
-                            "Unknown option character `\\x%x'.\n",
-                            optopt);*/
+                      fprintf (stderr, "Please specify the number of rounds with -r.\n");
+                  else if (isprint (optopt))
+                      fprintf (stderr, "Unknown option `-%c'.\n", optopt);
+                  else
+                      fprintf (stderr,
+                              "Unknown option character `\\x%x'.\n",
+                              optopt);*/
                 return 1;
 
             default:
@@ -227,8 +227,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
-	srand(seed);
-	srand48(rand());
+    srand(seed);
+    srand48(rand());
 
     if ( cfg_analysis == AT_PREIMAGE )
         preimage(rounds);
@@ -238,5 +238,5 @@ int main(int argc, char **argv)
     }
 
 
-	return 0;
+    return 0;
 }
