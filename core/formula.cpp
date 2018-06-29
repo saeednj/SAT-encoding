@@ -505,14 +505,6 @@ int Formula::clauseCheck()
 }
 
 
-int Formula::oneDeep(vector<queue<int>> &m)
-{
-    for( int i=0; i<m.size(); i++ )
-        if ( m[i].size() > 1 )
-            return 0;
-    return 1;
-}
-
 void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
 {
     unsigned int size = 1 + floor(log2(n));
@@ -520,10 +512,12 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
     for( int i=0; i<n; i++ )
         m[0].push(vars[i]);
 
+    bool oneDeep = false;
     if ( useFACardinality )
     {
-        while( !oneDeep(m) )
+        while( !oneDeep )
         {
+            oneDeep = true;
             for( int i=0; i<m.size(); i++ )
             {
                 if ( m[i].size() >= 3 )
@@ -563,14 +557,17 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
                         m[i+1].push(carry);
                     }
                 }
+
+                if ( m[i].size() > 1 ) oneDeep = false;
             }
         }
 
     }
     else
     {
-        while( !oneDeep(m) )
+        while( !oneDeep )
         {
+            oneDeep = true;
             for( int i=0; i<m.size(); i++ )
             {
                 if ( m[i].size() >= 2 )
@@ -591,6 +588,8 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
                     for( int j=0; j<slen+1 && i+j<m.size(); j++ )
                         m[i+j].push(sum[j]);
                 }
+
+                if ( m[i].size() > 1 ) oneDeep = false;
             }
         }
     }

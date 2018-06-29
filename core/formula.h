@@ -50,7 +50,6 @@ class Formula
         void rotl(int *z, int *x, int p, int n = 32);
         void rotr(int *z, int *x, int p, int n = 32) { rotl(z, x, n-p, n); }
         void assign(int *z, int *x) { rotl(z, x, 0); }
-//        void shr(int *z, int *x, int n);
         void and2(int *z, int *x, int *y, int n = 32);
         void or2(int *z, int *x, int *y, int n = 32);
         void eq(int *z, int *x, int n = 32);
@@ -60,6 +59,7 @@ class Formula
         void xor4(int *z, int *a, int *b, int *c, int *d, int n = 32);
         void ch(int *z, int *x, int *y, int *t, int n = 32);
         void maj3(int *z, int *x, int *y, int *t, int n = 32);
+
         void add2(int *z, int *x, int *y, int n = 32);
         void add3(int *z, int *a, int *b, int *c, int n = 32);
         void add4(int *z, int *a, int *b, int *c, int *d, int n = 32);
@@ -83,7 +83,6 @@ class Formula
 
         void adder(const vector<int> &lhs, const vector<int> &rhs);
 
-        int oneDeep(vector<queue<int>> &m);
     private:
 };
 
