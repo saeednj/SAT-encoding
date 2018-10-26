@@ -41,7 +41,7 @@ int main(int argc, char** argv)
     scanf("%s", res);
     if ( res[0] != 'S' )
     {
-        printf("Result is UNSAT!\n");
+        printf("Verdict is missing or the result is UNSAT!!\n");
         return 1;
     }
 
