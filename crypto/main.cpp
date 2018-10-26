@@ -23,6 +23,7 @@ enum AnalysisType {
 int cfg_use_xor_clauses;
 int cfg_use_normal_adders;
 int cfg_use_rand;
+int cfg_print_target;
 FuncType cfg_function;
 AnalysisType cfg_analysis;
 
@@ -43,6 +44,19 @@ void preimage(int rounds)
                 w[i] = lrand48();
 
             sha1_comp(w, hash, rounds);
+
+            if ( cfg_print_target )
+            {
+                for( int i=0; i<16; i++ )
+                    printf("%08x ", w[i]);
+                printf("\n");
+
+                for( int i=0; i<5; i++ )
+                    printf("%08x ", hash[i]);
+                printf("\n");
+
+                return;
+            }
         }
         else
         {
@@ -83,6 +97,19 @@ void preimage(int rounds)
                 w[i] = lrand48();
 
             sha256_comp(w, hash, rounds);
+
+            if ( cfg_print_target )
+            {
+                for( int i=0; i<16; i++ )
+                    printf("%08x ", w[i]);
+                printf("\n");
+
+                for( int i=0; i<8; i++ )
+                    printf("%08x ", hash[i]);
+                printf("\n");
+
+                return;
+            }
         }
         else
         {
@@ -125,10 +152,11 @@ void display_usage()
             "  --help or -h                             Prints this message\n"
             "  --xor                                    Use XOR clauses\n"
             "  --normal_adders                          Use normal Teitin encoding for adders (instead of espresso adders)\n"
-            "  --random_target                          Generate a random input/target pair (instead of reading from stdin\n"
+            "  --random_target                          Generate a random input/target pair (instead of reading from stdin)\n"
             "  --rounds or -r {int(16..80)}             Number of rounds in your function\n"
             "  --function or -f {sha1 | sha256}         Type of function under analysis (default: sha1)\n"
             "  --analysis or -a {preimage | collision}  Type of analysis (default: preimage)\n"
+            "  --print_target                           Prints the randomly generated message/target and exits (--random_target should be given)\n"
           );
 }
 
@@ -141,6 +169,7 @@ int main(int argc, char **argv)
     cfg_use_xor_clauses = 0;
     cfg_use_normal_adders = 0;
     cfg_use_rand = 0;
+    cfg_print_target = 0;
     cfg_function = FT_SHA1;
     cfg_analysis = AT_PREIMAGE;
     int rounds = -1;
@@ -149,8 +178,9 @@ int main(int argc, char **argv)
     {
         /* flag options */
         {"xor",           no_argument, &cfg_use_xor_clauses,   1},
-        {"normal_adder",  no_argument, &cfg_use_normal_adders, 1},
+        {"normal_adders", no_argument, &cfg_use_normal_adders, 1},
         {"random_target", no_argument, &cfg_use_rand,          1},
+        {"print_target",  no_argument, &cfg_print_target,      1},
         /* valued options */
         {"rounds",   required_argument, 0, 'r'},
         {"function", required_argument, 0, 'f'},
