@@ -16,7 +16,7 @@ void SHA256::encode()
         cnf.newVars(w[i], 32, "w"+to_string(i));
 
     for( int i=0; i<8; i++ )
-        cnf.newVars(in[i], 32, "iv"+to_string(i));
+        cnf.newVars(in[i], 32);
 
     for( int i=0; i<8; i++ )
         cnf.newVars(out[i], 32, "hash"+to_string(i));
@@ -108,11 +108,9 @@ void SHA256::encode()
         cnf.ch(f1, e, f, g);
         cnf.maj3(f2, a, b, c);
 
-        int temp1[32], temp2[32];
+        int temp1[32];
         cnf.newVars(temp1);
-        cnf.newVars(temp2);
         cnf.add5(temp1, h, sigma1, f1, k[i], w[i]);
-        cnf.add2(temp2, sigma0, f2);
 
         cnf.assign(h, g);
         cnf.assign(g, f);
@@ -123,7 +121,7 @@ void SHA256::encode()
         cnf.assign(c, b);
         cnf.assign(b, a);
         cnf.newVars(a);
-        cnf.add2(a, temp1, temp2);
+        cnf.add3(a, temp1, sigma0, f2);
     }
 
     /* Final addition */

@@ -21,13 +21,13 @@ void SHA1::encode()
         cnf.newVars(wt[i], 32, "w"+to_string(i));
 
     for( int i=0; i<5; i++ )
-        cnf.newVars(in[i], 32, "iv"+to_string(i));
+        cnf.newVars(in[i], 32);
 
     for( int i=0; i<5; i++ )
         cnf.newVars(out[i], 32, "hash"+to_string(i));
 
     for( int i=0; i<rounds; i++ )
-        cnf.newVars(a[i + 5], 32, "a"+to_string(i+5));
+        cnf.newVars(a[i + 5], 32);
 
     /* Message expansion */
     for( int i=16; i<rounds; i++ )
