@@ -1,6 +1,7 @@
 #include "formula.h"
 #include <unistd.h>
 #include <math.h>
+#include <assert.h>
 #include <string.h>
 #include <sys/wait.h>
 
@@ -179,6 +180,67 @@ void Formula::maj3(int *z, int *x, int *y, int *t, int n)
     }
 }
 
+void Formula::halfadder(int *c, int *s, int *x, int *y, int n)
+{
+    xor2(s, x, y, n);
+    and2(c, x, y, n);
+}
+
+void Formula::fulladder(int *c, int *s, int *x, int *y, int *t, int n)
+{
+    xor3(s, x, y, t, n);
+    maj3(c, x, y, t, n);
+}
+
+void Formula::counter(int *z, int *x, int n)
+{
+    assert( n <= 7 );
+
+    int t[2], c[3];
+    if ( n == 2 )
+    {
+        halfadder(z+1, z, x, x+1, 1);
+    }
+    else if ( n == 3 )
+    {
+        fulladder(z+1, z, x, x+1, x+2, 1);
+    }
+    else if ( n == 4 )
+    {
+        newVars(t, 1);
+        newVars(c, 2);
+        fulladder(c, t, x, x+1, x+2, 1);
+        halfadder(c+1, z, x+3, t, 1);
+        halfadder(z+2, z+1, c+1, c, 1);
+    }
+    else if ( n == 5 )
+    {
+        newVars(t, 1);
+        newVars(c, 2);
+        fulladder(c, t, x, x+1, x+2, 1);
+        fulladder(c+1, z, t, x+3, x+4, 1);
+        halfadder(z+2, z+1, c+1, c, 1);
+    }
+    else if ( n == 6 )
+    {
+        newVars(t, 2);
+        newVars(c, 3);
+        fulladder(c, t, x, x+1, x+2, 1);
+        fulladder(c+1, t+1, x+3, x+4, x+5, 1);
+        halfadder(c+2, z, t, t+1, 1);
+        fulladder(z+2, z+1, c+2, c+1, c, 1);
+    }
+    else if ( n == 7 )
+    {
+        newVars(t, 2);
+        newVars(c, 3);
+        fulladder(c, t, x, x+1, x+2, 1);
+        fulladder(c+1, t+1, x+3, x+4, x+5, 1);
+        fulladder(c+2, z, t, t+1, x+6, 1);
+        fulladder(z+2, z+1, c+2, c+1, c, 1);
+    }
+}
+
 void Formula::add2(int *z, int *x, int *y, int n)
 {
     if ( useTseitinAdders )
@@ -188,9 +250,12 @@ void Formula::add2(int *z, int *x, int *y, int n)
 
         xor2(z, x, y, 1);
         and2(c, x, y, 1);
+        // halfadder(c, z, x, y, 1);
 
         xor3(z+1, x+1, y+1, c, n-1);
         maj3(c+1, x+1, y+1, c, n-2);
+        // fulladder(c+1, z+1, x+1, y+1, c, n-2);
+        // xor3(z+n-1, x+n-1, y+n-1, c+n-2, 1);
     }
     else
     {
@@ -208,7 +273,11 @@ void Formula::add2(int *z, int *x, int *y, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
+#ifdef _counter_TEST
+            counter(&sum[0], &addends[i][0], addends[i].size());
+#else
             adder(addends[i], sum);
+#endif
         }
     }
 }
@@ -242,7 +311,11 @@ void Formula::add3(int *z, int *a, int *b, int *c, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
+#ifdef _counter_TEST
+            counter(&sum[0], &addends[i][0], addends[i].size());
+#else
             adder(addends[i], sum);
+#endif
         }
     }
 }
@@ -279,7 +352,11 @@ void Formula::add4(int *z, int *a, int *b, int *c, int *d, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
+#ifdef _counter_TEST
+            counter(&sum[0], &addends[i][0], addends[i].size());
+#else
             adder(addends[i], sum);
+#endif
         }
     }
 }
@@ -321,7 +398,11 @@ void Formula::add5(int *z, int *a, int *b, int *c, int *d, int *e, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
+#ifdef _counter_TEST
+            counter(&sum[0], &addends[i][0], addends[i].size());
+#else
             adder(addends[i], sum);
+#endif
         }
     }
 }

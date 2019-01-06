@@ -60,6 +60,9 @@ class Formula
         void ch(int *z, int *x, int *y, int *t, int n = 32);
         void maj3(int *z, int *x, int *y, int *t, int n = 32);
 
+        void halfadder(int *c, int *s, int *x, int *y, int n);
+        void fulladder(int *c, int *s, int *x, int *y, int *t, int n);
+
         void add2(int *z, int *x, int *y, int n = 32);
         void add3(int *z, int *a, int *b, int *c, int n = 32);
         void add4(int *z, int *a, int *b, int *c, int *d, int n = 32);
@@ -82,6 +85,8 @@ class Formula
         vector<Clause> clauses;
 
         void adder(const vector<int> &lhs, const vector<int> &rhs);
+
+        void counter(int *z, int *x, int n);
 
     private:
 };
