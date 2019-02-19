@@ -2,6 +2,9 @@ SRCS = ../core/formula.cpp util.cpp sha1.cpp sha256.cpp
 OBJS = $(SRCS:.cpp=.o)
 TARGET = main
 CFLAGS = -std=c++11 -O2 -I ../core/
+MACROS = #-D_DOTMATRIX_ #-D_COMPRESSOR_TEST
+
+CFLAGS += $(MACROS)
 
 .cpp.o: $(SRCS)
 	g++ -c $< -o $@ $(CFLAGS)

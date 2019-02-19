@@ -39,10 +39,22 @@ class Formula
         int getVarCnt() { return varCnt; }
         int getClauseCnt() { return clauses.size(); }
 
+        enum AdderType {
+            RIPPLE_CARRY,
+        };
+
+        enum MultiAdderType {
+            TWO_OPERAND,
+            ESPRESSO,
+            DOT_MATRIX,
+            COUNTER_CHAIN,
+        };
+
         void setVarID(int v) { varID = v; }                                     // Sets the starting point of variable IDs
         void setUseXORClauses() { useXORClauses = true; }
         void setUseFACardinality() { useFACardinality = true; }
-        void setUseTseitinAdders() { useTseitinAdders = true; }
+        void setAdderType(AdderType type) { adderType = type; }
+        void setMultiAdderType(MultiAdderType type) { multiAdderType = type; }
 
         void dimacs(bool header = true);                                        // Prints the current clause database in DIMACS format to stdout
 
@@ -59,6 +71,7 @@ class Formula
         void xor4(int *z, int *a, int *b, int *c, int *d, int n = 32);          // Four-input XOR
         void ch(int *z, int *x, int *y, int *t, int n = 32);                    // 'IF' function (used in SHA round functions). z = x ? y : t;
         void maj3(int *z, int *x, int *y, int *t, int n = 32);                  // Three-input Majority function
+
 
         void halfadder(int *c, int *s, int *x, int *y, int n);
         void fulladder(int *c, int *s, int *x, int *y, int *t, int n);
@@ -80,11 +93,12 @@ class Formula
         int varCnt, varID;
         bool useXORClauses;
         bool useFACardinality;
-        bool useTseitinAdders;
+        AdderType adderType;
+        MultiAdderType multiAdderType;
         map<string, unsigned int> varNames;                                     // labels for variable IDs
         vector<Clause> clauses;
 
-        void adder(const vector<int> &lhs, const vector<int> &rhs);             // deriving lhs = addition(rhs), through espresso minimization;
+        void espresso(const vector<int> &lhs, const vector<int> &rhs);             // deriving lhs = addition(rhs), through espresso minimization;
 
         void counter(int *z, int *x, int n);
 

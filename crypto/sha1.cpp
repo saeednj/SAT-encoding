@@ -7,7 +7,7 @@ SHA1::SHA1(int rnds, bool initBlock, bool useXorClauses, bool useNormalAdders, i
     cnf.setVarID(offset);
     initialBlock = initBlock;
     if ( useXorClauses ) cnf.setUseXORClauses();
-    if ( useNormalAdders ) cnf.setUseTseitinAdders();
+    if ( useNormalAdders ) cnf.setMultiAdderType(Formula::TWO_OPERAND);
     encode();
 }
 

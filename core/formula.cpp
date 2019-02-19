@@ -11,7 +11,8 @@ Formula::Formula()
     varCnt = 0;
     useXORClauses = false;
     useFACardinality = false;
-    useTseitinAdders = false;
+    adderType = RIPPLE_CARRY;
+    multiAdderType = ESPRESSO;
 }
 
 Formula::~Formula()
@@ -243,7 +244,7 @@ void Formula::counter(int *z, int *x, int n)
 
 void Formula::add2(int *z, int *x, int *y, int n)
 {
-    if ( useTseitinAdders )
+    if ( multiAdderType == TWO_OPERAND )
     {
         int c[n-1];
         newVars(c, n-1);
@@ -273,18 +274,23 @@ void Formula::add2(int *z, int *x, int *y, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
-#ifdef _counter_TEST
-            counter(&sum[0], &addends[i][0], addends[i].size());
-#else
-            adder(addends[i], sum);
-#endif
+            if ( multiAdderType == COUNTER_CHAIN )
+                counter(&sum[0], &addends[i][0], addends[i].size());
+            else if ( multiAdderType == ESPRESSO )
+                espresso(addends[i], sum);
+            else
+            {
+                printf("INVALID MULTI OPERAND ADDER TYPE in add2!\n");
+                exit(1);
+            }
+
         }
     }
 }
 
 void Formula::add3(int *z, int *a, int *b, int *c, int n)
 {
-    if ( useTseitinAdders )
+    if ( multiAdderType == TWO_OPERAND )
     {
         int t0[n];
         newVars(t0, n);
@@ -311,18 +317,22 @@ void Formula::add3(int *z, int *a, int *b, int *c, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
-#ifdef _counter_TEST
-            counter(&sum[0], &addends[i][0], addends[i].size());
-#else
-            adder(addends[i], sum);
-#endif
+            if ( multiAdderType == COUNTER_CHAIN )
+                counter(&sum[0], &addends[i][0], addends[i].size());
+            else if ( multiAdderType == ESPRESSO )
+                espresso(addends[i], sum);
+            else
+            {
+                printf("INVALID MULTI OPERAND ADDER TYPE in add3!\n");
+                exit(1);
+            }
         }
     }
 }
 
 void Formula::add4(int *z, int *a, int *b, int *c, int *d, int n)
 {
-    if ( useTseitinAdders )
+    if ( multiAdderType == TWO_OPERAND )
     {
         int t0[n];
         newVars(t0, n);
@@ -352,18 +362,22 @@ void Formula::add4(int *z, int *a, int *b, int *c, int *d, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
-#ifdef _counter_TEST
-            counter(&sum[0], &addends[i][0], addends[i].size());
-#else
-            adder(addends[i], sum);
-#endif
+            if ( multiAdderType == COUNTER_CHAIN )
+                counter(&sum[0], &addends[i][0], addends[i].size());
+            else if ( multiAdderType == ESPRESSO )
+                espresso(addends[i], sum);
+            else
+            {
+                printf("INVALID MULTI OPERAND ADDER TYPE in add4!\n");
+                exit(1);
+            }
         }
     }
 }
 
 void Formula::add5(int *z, int *a, int *b, int *c, int *d, int *e, int n)
 {
-    if ( useTseitinAdders )
+    if ( multiAdderType == TWO_OPERAND )
     {
         int t0[n];
         newVars(t0, n);
@@ -398,16 +412,20 @@ void Formula::add5(int *z, int *a, int *b, int *c, int *d, int *e, int n)
             for( int j=1; j<1+m; j++ )
                 addends[i + j].push_back(sum[j]);
 
-#ifdef _counter_TEST
-            counter(&sum[0], &addends[i][0], addends[i].size());
-#else
-            adder(addends[i], sum);
-#endif
+            if ( multiAdderType == COUNTER_CHAIN )
+                counter(&sum[0], &addends[i][0], addends[i].size());
+            else if ( multiAdderType == ESPRESSO )
+                espresso(addends[i], sum);
+            else
+            {
+                printf("INVALID MULTI OPERAND ADDER TYPE in add5!\n");
+                exit(1);
+            }
         }
     }
 }
 
-void Formula::adder(const vector<int> &lhs, const vector<int> &rhs)
+void Formula::espresso(const vector<int> &lhs, const vector<int> &rhs)
 {
     static map<pair<unsigned int, unsigned int>, vector<vector<int>>> cache;
 
@@ -664,7 +682,7 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
                     unsigned int slen = floor(log2(addends.size()));
                     vector<int> sum(slen + 1);
                     newVars(&sum[0], slen+1);
-                    adder(addends, sum);
+                    espresso(addends, sum);
 
                     for( int j=0; j<slen+1 && i+j<m.size(); j++ )
                         m[i+j].push(sum[j]);

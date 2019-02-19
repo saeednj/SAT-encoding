@@ -6,7 +6,7 @@ SHA256::SHA256(int rnds, bool initBlock, bool useXorClauses, bool useNormalAdder
     cnf.setVarID(offset);
     initialBlock = initBlock;
     if ( useXorClauses ) cnf.setUseXORClauses();
-    if ( useNormalAdders ) cnf.setUseTseitinAdders();
+    if ( useNormalAdders ) cnf.setMultiAdderType(Formula::TWO_OPERAND);
     encode();
 }
 
