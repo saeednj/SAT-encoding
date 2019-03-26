@@ -44,10 +44,10 @@ class Formula
         };
 
         enum MultiAdderType {
-            TWO_OPERAND,
-            ESPRESSO,
-            DOT_MATRIX,
-            COUNTER_CHAIN,
+            TWO_OPERAND,              // Adding two operands at a time
+            COUNTER_CHAIN,            // Using counters (adding up bits in a single column) in a ripple carry fashion
+            ESPRESSO,                 // Similar to COUNTER_CHAIN, but uses espresso logic minimizer instead of half/full adders
+            DOT_MATRIX,               // Reducing the whole dot matrix of operand bits using wallace tree (and half/full adders)
         };
 
         void setVarID(int v) { varID = v; }                                     // Sets the starting point of variable IDs
