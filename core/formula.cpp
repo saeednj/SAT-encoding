@@ -244,19 +244,19 @@ void Formula::counter(int *z, int *x, int n)
 
 void Formula::add2(int *z, int *x, int *y, int n)
 {
-    if ( multiAdderType == TWO_OPERAND )
+    if ( multiAdderType == TWO_OPERAND || multiAdderType == DOT_MATRIX )
     {
         int c[n-1];
         newVars(c, n-1);
 
-        xor2(z, x, y, 1);
-        and2(c, x, y, 1);
-        // halfadder(c, z, x, y, 1);
+        // xor2(z, x, y, 1);
+        // and2(c, x, y, 1);
+        halfadder(c, z, x, y, 1);
 
-        xor3(z+1, x+1, y+1, c, n-1);
-        maj3(c+1, x+1, y+1, c, n-2);
-        // fulladder(c+1, z+1, x+1, y+1, c, n-2);
-        // xor3(z+n-1, x+n-1, y+n-1, c+n-2, 1);
+        // xor3(z+1, x+1, y+1, c, n-1);
+        // maj3(c+1, x+1, y+1, c, n-2);
+        fulladder(c+1, z+1, x+1, y+1, c, n-2);
+        xor3(z+n-1, x+n-1, y+n-1, c+n-2, 1);
     }
     else
     {
@@ -299,6 +299,18 @@ void Formula::add3(int *z, int *a, int *b, int *c, int n)
         int t1[n];
         newVars(t1, n);
         add2(z, c, t0, n);
+    }
+    else if ( multiAdderType == DOT_MATRIX )
+    {
+        int t0[n-1];
+        int c0[n-1];
+        newVars(t0, n-1);
+        newVars(c0, n-1);
+        xor3(z, a, b, c, 1);
+        xor3(t0, a+1, b+1, c+1, n-1);
+        maj3(c0, a, b, c, n-1);
+
+        add2(z+1, t0, c0, n-1);
     }
     else
     {
@@ -343,6 +355,27 @@ void Formula::add4(int *z, int *a, int *b, int *c, int *d, int n)
         add2(t1, c, d, n);
 
         add2(z, t0, t1, n);
+    }
+    else if ( multiAdderType == DOT_MATRIX )
+    {
+        int t0[n];
+        int c0[n-1];
+        newVars(t0, n);
+        newVars(c0, n-1);
+        xor3(t0, a, b, c, n);
+        maj3(c0, a, b, c, n-1);
+
+        int t1[n-1];
+        int c1[n-1];
+        newVars(t1, n-1);
+        newVars(c1, n-1);
+        xor2(z, t0, d, 1);
+        and2(c1, t0, d, 1);
+        xor3(t1, t0+1, c0, d+1, n-1);
+        maj3(c1+1, t0+1, c0, d+1, n-2);
+
+        add2(z+1, t1, c1, n-1);
+
     }
     else
     {
@@ -392,6 +425,36 @@ void Formula::add5(int *z, int *a, int *b, int *c, int *d, int *e, int n)
         add2(t2, t0, t1, n);
 
         add2(z, t2, e, n);
+    }
+    else if ( multiAdderType == DOT_MATRIX )
+    {
+        int t0[n];
+        int c0[n-1];
+        newVars(t0, n);
+        newVars(c0, n-1);
+        xor3(t0, a, b, c, n);
+        maj3(c0, a, b, c, n-1);
+
+
+        int t1[n-1];
+        int c1[n-1];
+        newVars(t1, n-1);
+        newVars(c1, n-1);
+        xor3(z, t0, d, e, 1);
+        maj3(c1, t0, d, e, 1);
+        xor3(t1, t0+1, c0, d+1, n-1);
+        maj3(c1+1, t0+1, c0, d+1, n-2);
+
+        int t2[n-2];
+        int c2[n-2];
+        newVars(t2, n-2);
+        newVars(c2, n-2);
+        xor3(z+1, t1, c1, e+1, 1);
+        maj3(c2, t1, c1, e+1, 1);
+        xor3(t2, t1+1, c1+1, e+2, n-2);
+        maj3(c2+1, t1+1, c1+1, e+2, n-3);
+
+        add2(z+2, t2, c2, n-2);
     }
     else
     {
