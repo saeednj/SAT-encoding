@@ -21,7 +21,7 @@ enum AnalysisType {
 
 /* config options */
 int cfg_use_xor_clauses;
-int cfg_use_normal_adders;
+Formula::MultiAdderType cfg_multi_adder_type;
 int cfg_use_rand;
 int cfg_print_target;
 FuncType cfg_function;
@@ -32,7 +32,10 @@ void preimage(int rounds)
 {
     if ( cfg_function == FT_SHA1 )
     {
-        SHA1 f(rounds, true, cfg_use_xor_clauses, cfg_use_normal_adders);
+        SHA1 f(rounds);
+        if ( cfg_use_xor_clauses ) f.cnf.setUseXORClauses();
+        if ( cfg_multi_adder_type != Formula::MAT_NONE ) f.cnf.setMultiAdderType(cfg_multi_adder_type);
+        f.encode();
 
         unsigned w[80];
         unsigned hash[5];
@@ -85,7 +88,10 @@ void preimage(int rounds)
     }
     else if ( cfg_function == FT_SHA256 )
     {
-        SHA256 f(rounds, true, cfg_use_xor_clauses, cfg_use_normal_adders);
+        SHA256 f(rounds);
+        if ( cfg_use_xor_clauses ) f.cnf.setUseXORClauses();
+        if ( cfg_multi_adder_type != Formula::MAT_NONE ) f.cnf.setMultiAdderType(cfg_multi_adder_type);
+        f.encode();
 
         unsigned w[64];
         unsigned hash[8];
@@ -150,8 +156,9 @@ void display_usage()
 {
     printf("USAGE: ./main {number_of_rounds}\n"
             "  --help or -h                             Prints this message\n"
-            "  --xor                                    Use XOR clauses\n"
-            "  --normal_adders                          Use normal Teitin encoding for adders (instead of espresso adders)\n"
+            "  --xor                                    Use XOR clauses (default: off)\n"
+            "  --adder_type or -A {two_operand | counter_chain | espresso | dot_matrix}\n"
+            "                                           Specifies the type of multi operand addition encoding (default: espresso)\n"
             "  --random_target                          Generate a random input/target pair (instead of reading from stdin)\n"
             "  --rounds or -r {int(16..80)}             Number of rounds in your function\n"
             "  --function or -f {sha1 | sha256}         Type of function under analysis (default: sha1)\n"
@@ -167,7 +174,7 @@ int main(int argc, char **argv)
 
     /* Arguments default values */
     cfg_use_xor_clauses = 0;
-    cfg_use_normal_adders = 0;
+    cfg_multi_adder_type = Formula::MAT_NONE;
     cfg_use_rand = 0;
     cfg_print_target = 0;
     cfg_function = FT_SHA1;
@@ -178,20 +185,20 @@ int main(int argc, char **argv)
     {
         /* flag options */
         {"xor",           no_argument, &cfg_use_xor_clauses,   1},
-        {"normal_adders", no_argument, &cfg_use_normal_adders, 1},
         {"random_target", no_argument, &cfg_use_rand,          1},
         {"print_target",  no_argument, &cfg_print_target,      1},
         /* valued options */
         {"rounds",   required_argument, 0, 'r'},
         {"function", required_argument, 0, 'f'},
         {"analysis", required_argument, 0, 'a'},
+        {"adder_type", required_argument, 0, 'A'},
         {"help",     no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
     /* Process command line */
     int c, option_index;
-    while( (c = getopt_long(argc, argv, "a:r:f:h", long_options, &option_index)) != -1 )
+    while( (c = getopt_long(argc, argv, "a:r:f:A:h", long_options, &option_index)) != -1 )
     {
         switch ( c )
         {
@@ -215,7 +222,7 @@ int main(int argc, char **argv)
                     AT_NONE;
                 if ( cfg_analysis == AT_NONE )
                 {
-                    fprintf(stderr, "Invalid or missing analysis type!\nUse -a or --analysis");
+                    fprintf(stderr, "Invalid or missing analysis type!\nUse -a or --analysis\n");
                     return 1;
                 }
                 break;
@@ -226,7 +233,21 @@ int main(int argc, char **argv)
                     FT_NONE;
                 if ( cfg_function == FT_NONE )
                 {
-                    fprintf(stderr, "Invalid or missing function type!\nUse -f or --function");
+                    fprintf(stderr, "Invalid or missing function type!\nUse -f or --function\n");
+                    return 1;
+                }
+                break;
+
+            case 'A':
+                cfg_multi_adder_type =
+                    strcmp(optarg, "two_operand") == 0 ? Formula::TWO_OPERAND :
+                    strcmp(optarg, "counter_chain") == 0 ? Formula::COUNTER_CHAIN :
+                    strcmp(optarg, "espresso") == 0 ? Formula::ESPRESSO :
+                    strcmp(optarg, "dot_matrix") == 0 ? Formula::DOT_MATRIX :
+                    Formula::MAT_NONE;
+                if ( cfg_multi_adder_type == Formula::MAT_NONE )
+                {
+                    fprintf(stderr, "Invalid or missing multi-adder type!\nUse -h to see the optionsi\n");
                     return 1;
                 }
                 break;

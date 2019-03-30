@@ -7,10 +7,7 @@ class SHA256 {
     public:
         SHA256(
                 int rnds = 64,
-                bool initBlock = true,
-                bool useXorClauses = false,
-                bool useNormalAdders = false,
-                int offset = 0);
+                bool initBlock = true);
 
         void encode();
         void fixOutput(unsigned target[8]);

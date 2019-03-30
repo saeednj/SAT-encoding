@@ -5,7 +5,7 @@
 
 class SHA1 {
     public:
-        SHA1(int rnds = 80, bool initBlock = true, bool useXorClauses = false, bool useNormalAdders = false, int offset = 0);
+        SHA1(int rnds = 80, bool initBlock = true);
 
         void encode();
         void fixOutput(unsigned target[5]);

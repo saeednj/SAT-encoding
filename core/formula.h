@@ -40,10 +40,12 @@ class Formula
         int getClauseCnt() { return clauses.size(); }
 
         enum AdderType {
+            AT_NONE,
             RIPPLE_CARRY,
         };
 
         enum MultiAdderType {
+            MAT_NONE,
             TWO_OPERAND,              // Adding two operands at a time
             COUNTER_CHAIN,            // Using counters (adding up bits in a single column) in a ripple carry fashion
             ESPRESSO,                 // Similar to COUNTER_CHAIN, but uses espresso logic minimizer instead of half/full adders

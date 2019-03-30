@@ -1,14 +1,10 @@
 #include "sha1.h"
 #include "formula.h"
 
-SHA1::SHA1(int rnds, bool initBlock, bool useXorClauses, bool useNormalAdders, int offset)
+SHA1::SHA1(int rnds, bool initBlock)
 {
     rounds = rnds;
-    cnf.setVarID(offset);
     initialBlock = initBlock;
-    if ( useXorClauses ) cnf.setUseXORClauses();
-    if ( useNormalAdders ) cnf.setMultiAdderType(Formula::TWO_OPERAND);
-    encode();
 }
 
 void SHA1::encode()
