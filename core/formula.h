@@ -26,7 +26,7 @@ struct Clause
 class Formula
 {
     public:
-        Formula();
+        Formula(string name = "");
         virtual ~Formula();
 
         void newVars(int *x, int n = 32, string name = "");                     // Reserves new variable IDs for the bitvector 'x' of size 'n'
@@ -91,13 +91,15 @@ class Formula
         vector<Clause> getClauses();
         void AddFormula(Formula& f);
 
+        map<string, unsigned int> varNames;                                     // labels for variable IDs
+        string formulaName;
+
     protected:
         int varCnt, varID;
         bool useXORClauses;
         bool useFACardinality;
         AdderType adderType;
         MultiAdderType multiAdderType;
-        map<string, unsigned int> varNames;                                     // labels for variable IDs
         vector<Clause> clauses;
 
         void espresso(const vector<int> &lhs, const vector<int> &rhs);             // deriving lhs = addition(rhs), through espresso minimization;

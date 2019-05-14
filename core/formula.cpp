@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sys/wait.h>
 
-Formula::Formula()
+Formula::Formula(string name)
 {
     varID = 0;
     varCnt = 0;
@@ -13,6 +13,7 @@ Formula::Formula()
     useFACardinality = false;
     adderType = RIPPLE_CARRY;
     multiAdderType = ESPRESSO;
+    formulaName = name;
 }
 
 Formula::~Formula()
@@ -774,4 +775,6 @@ void Formula::AddFormula(Formula& f)
     varCnt += f.getVarCnt();
     vector<Clause> c = f.getClauses();
     clauses.insert(clauses.end(), c.begin(), c.end());
+    for( auto e : f.varNames )
+        varNames[e.first + "_" + f.formulaName] = e.second;
 }
