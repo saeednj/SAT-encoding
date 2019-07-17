@@ -5,6 +5,7 @@
 #include <string>
 #include <map>
 #include <queue>
+#include <algorithm>
 
 using namespace std;
 
@@ -31,8 +32,8 @@ class Formula
 
         void newVars(int *x, int n = 32, string name = "");                     // Reserves new variable IDs for the bitvector 'x' of size 'n'
 
-        void addClause(vector<int> v) { clauses.push_back(Clause(v)); }
-        void addClause(Clause c) { clauses.push_back(c); }
+        void addClause(vector<int> v);
+        void addClause(Clause c);
 
         void fixedValue(int *z, unsigned v, int n = 32);                        // Forces the bitvector 'z' to the value 'v'
 

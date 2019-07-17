@@ -29,6 +29,30 @@ void Formula::newVars(int *x, int n, string name)
     varCnt += n;
 }
 
+void Formula::addClause(vector<int> v)
+{
+    if ( any_of(v.begin(), v.end(), [](int x){ return x==0; }) )
+    {
+        fprintf(stderr, "bad vector clause:");
+        for( int x : v ) fprintf(stderr, " %d", x);
+        fprintf(stderr, "\n");
+        exit(1);
+    }
+    clauses.push_back(Clause(v));
+}
+
+void Formula::addClause(Clause c)
+{
+    if ( any_of(v.begin(), v.end(), [](int x){ return x==0; }) )
+    {
+        fprintf(stderr, "bad clause:");
+        for( int x : c.lits ) fprintf(stderr, " %d", x);
+        fprintf(stderr, "\n");
+        exit(1);
+    }
+    clauses.push_back(c);
+}
+
 void Formula::fixedValue(int *z, unsigned value, int n)
 {
     for( int i=0; i<n; i++ )
@@ -662,7 +686,11 @@ int Formula::clauseCheck()
     for( Clause c : clauses )
     {
         for( int v : c.lits )
-            if ( abs(v) > getVarCnt() || v == 0 ) abort();
+        {
+            if ( abs(v) > getVarCnt() ) { fprintf(stderr, "Clause check failed: out of bound variable ID (%d)! var_cnt == %d\n", v, getVarCnt()); abort(); }
+            if ( v == 0 ) { fprintf(stderr, "Clause check failed: variable ID is zero!\n"); abort(); }
+        }
+
     }
     return 0;
 }
