@@ -16,10 +16,16 @@ class SHA256 {
         int in[8][32];
         int out[8][32];
 
+        int A[70][32];
+        int E[70][32];
+
         int rounds;
         bool initialBlock;
 
         Formula cnf;
+
+        void Sigma0(int *z, int *x);
+        void Sigma1(int *z, int *x);
 };
 
 #endif

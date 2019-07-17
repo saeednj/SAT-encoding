@@ -43,7 +43,7 @@ void Formula::addClause(vector<int> v)
 
 void Formula::addClause(Clause c)
 {
-    if ( any_of(v.begin(), v.end(), [](int x){ return x==0; }) )
+    if ( any_of(c.lits.begin(), c.lits.end(), [](int x){ return x==0; }) )
     {
         fprintf(stderr, "bad clause:");
         for( int x : c.lits ) fprintf(stderr, " %d", x);

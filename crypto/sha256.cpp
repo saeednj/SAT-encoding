@@ -17,6 +17,12 @@ void SHA256::encode()
     for( int i=0; i<8; i++ )
         cnf.newVars(out[i], 32, "hash"+to_string(i));
 
+    for( int i=0; i<rounds; i++ )
+    {
+        cnf.newVars(A[i+4], 32);
+        cnf.newVars(E[i+4], 32);
+    }
+
     /* Message expansion */
     for( int i=16; i<rounds; i++ )
     {
@@ -69,17 +75,14 @@ void SHA256::encode()
         cnf.fixedValue(in[7], 0x5be0cd19);
     }
 
-    int a[32], b[32], c[32], d[32];
-    int e[32], f[32], g[32], h[32];
-
-    cnf.assign(a, in[0]);
-    cnf.assign(b, in[1]);
-    cnf.assign(c, in[2]);
-    cnf.assign(d, in[3]);
-    cnf.assign(e, in[4]);
-    cnf.assign(f, in[5]);
-    cnf.assign(g, in[6]);
-    cnf.assign(h, in[7]);
+    cnf.assign(A[3], in[0]);
+    cnf.assign(A[2], in[1]);
+    cnf.assign(A[1], in[2]);
+    cnf.assign(A[0], in[3]);
+    cnf.assign(E[3], in[4]);
+    cnf.assign(E[2], in[5]);
+    cnf.assign(E[1], in[6]);
+    cnf.assign(E[0], in[7]);
 
     /* Main loop */
     for( int i=0; i<rounds; i++ )
@@ -87,48 +90,33 @@ void SHA256::encode()
         int sigma0[32], sigma1[32];
         cnf.newVars(sigma0);
         cnf.newVars(sigma1);
-
-        int r1[32], r2[32], r3[32];
-        cnf.rotr(r1, a, 2);
-        cnf.rotr(r2, a, 13);
-        cnf.rotr(r3, a, 22);
-        cnf.xor3(sigma0, r1, r2, r3);
-        cnf.rotr(r1, e, 6);
-        cnf.rotr(r2, e, 11);
-        cnf.rotr(r3, e, 25);
-        cnf.xor3(sigma1, r1, r2, r3);
+        Sigma0(sigma0, A[i+3]);
+        Sigma1(sigma1, E[i+3]);
 
         int f1[32], f2[32];
         cnf.newVars(f1);
         cnf.newVars(f2);
-        cnf.ch(f1, e, f, g);
-        cnf.maj3(f2, a, b, c);
+        cnf.ch(f1, E[i+3], E[i+2], E[i+1]);
+        cnf.maj3(f2, A[i+3], A[i+2], A[i+1]);
 
-        int temp1[32];
-        cnf.newVars(temp1);
-        cnf.add5(temp1, h, sigma1, f1, k[i], w[i]);
+        int T[32];
+        cnf.newVars(T);
+        cnf.add5(T, E[i], sigma1, f1, k[i], w[i]);
 
-        cnf.assign(h, g);
-        cnf.assign(g, f);
-        cnf.assign(f, e);
-        cnf.newVars(e);
-        cnf.add2(e, d, temp1);
-        cnf.assign(d, c);
-        cnf.assign(c, b);
-        cnf.assign(b, a);
-        cnf.newVars(a);
-        cnf.add3(a, temp1, sigma0, f2);
+        cnf.add2(E[i+4], A[i], T);
+
+        cnf.add3(A[i+4], T, sigma0, f2);
     }
 
     /* Final addition */
-    cnf.add2(out[0], in[0], a);
-    cnf.add2(out[1], in[1], b);
-    cnf.add2(out[2], in[2], c);
-    cnf.add2(out[3], in[3], d);
-    cnf.add2(out[4], in[4], e);
-    cnf.add2(out[5], in[5], f);
-    cnf.add2(out[6], in[6], g);
-    cnf.add2(out[7], in[7], h);
+    cnf.add2(out[0], in[0], A[rounds+3]);
+    cnf.add2(out[1], in[1], A[rounds+2]);
+    cnf.add2(out[2], in[2], A[rounds+1]);
+    cnf.add2(out[3], in[3], A[rounds]);
+    cnf.add2(out[4], in[4], E[rounds+3]);
+    cnf.add2(out[5], in[5], E[rounds+2]);
+    cnf.add2(out[6], in[6], E[rounds+1]);
+    cnf.add2(out[7], in[7], E[rounds]);
 }
 
 void SHA256::fixOutput(unsigned target[8])
@@ -137,3 +125,20 @@ void SHA256::fixOutput(unsigned target[8])
         cnf.fixedValue(out[i], target[i]);
 }
 
+void SHA256::Sigma0(int *z, int *x)
+{
+    int r1[32], r2[32], r3[32];
+    cnf.rotr(r1, x, 2);
+    cnf.rotr(r2, x, 13);
+    cnf.rotr(r3, x, 22);
+    cnf.xor3(z, r1, r2, r3);
+}
+
+void SHA256::Sigma1(int *z, int *x)
+{
+    int r1[32], r2[32], r3[32];
+    cnf.rotr(r1, x, 6);
+    cnf.rotr(r2, x, 11);
+    cnf.rotr(r3, x, 25);
+    cnf.xor3(z, r1, r2, r3);
+}
