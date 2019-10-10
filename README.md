@@ -10,9 +10,10 @@ of modern SAT solvers.
       conjectured upper limit.
 * `crypto`: Cryptographic problems
     - `sha1`, `sha256`: Generate preimage/collision attack instances of [SHA-1][2] and [SHA-256][3].
-* `multiplication`: Integer multiplication problems
+* `arith`: Integer arithmetic problems
     - `long`: Long multiplication (elementary) style of a*b
     - `mod`: Modular multiplication of the form (a*b) mod (2^n-delta)
+    - `ppa`: Parallel prefix addition
 
 [1]: https://en.wikipedia.org/wiki/Total_coloring
 [2]: https://en.wikipedia.org/wiki/SHA-1
