@@ -64,7 +64,7 @@ class Formula
         /* operations */
         void rotl(int *z, int *x, int p, int n = 32);                           // Rotate left 'p' postitions
         void rotr(int *z, int *x, int p, int n = 32) { rotl(z, x, n-p, n); }    // Rotate right 'p' positions
-        void assign(int *z, int *x) { rotl(z, x, 0); }
+        void assign(int *z, int *x, int n = 32) { rotl(z, x, 0, n); }
         void and2(int *z, int *x, int *y, int n = 32);                          // Two-input AND
         void or2(int *z, int *x, int *y, int n = 32);                           // Two-input OR
         void eq(int *z, int *x, int n = 32);                                    // Equivalence
