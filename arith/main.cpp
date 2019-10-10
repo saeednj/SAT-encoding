@@ -1,7 +1,8 @@
 #include "long.h"
 #include "mod.h"
+#include "ppa.h"
 
-#define TEST2
+#define TEST3
 
 int main()
 {
@@ -22,5 +23,18 @@ int main()
     f.cnf.dimacs();
 #endif
 
+#ifdef TEST3
+    ParallelPrefixAdder ppa(8);
+
+    ppa.newVars(ppa.X, 8);
+    ppa.newVars(ppa.Y, 8);
+    ppa.newVars(ppa.Z, 8);
+
+    ppa.fixedValue(ppa.Z, 0xab, 8);
+
+    ppa.encode();
+
+    ppa.dimacs();
+#endif
     return 0;
 }
