@@ -21,7 +21,7 @@ for t in $(seq $ntests); do
     d=$((RANDOM % M))
     e=$((RANDOM % M))
     ./add5 $a $b $c $d $e > tmp.cnf
-    ~/maplesat tmp.cnf tmp.sol > tmp.out
+    maplesat tmp.cnf tmp.sol > tmp.out
     z=$(tail -n 1 tmp.sol | awk -vx=$BW 'BEGIN{s=0;}{for(i=x;i>=1;i--) s=s*2+($i<0?0:1);}END{print s}')
     tz=$(( (a+b+c+d+e) % M ))
     if [ $z -ne $tz ]; then

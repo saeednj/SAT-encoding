@@ -664,21 +664,30 @@ void Formula::espresso(const vector<int> &lhs, const vector<int> &rhs)
 }
 
 
-void Formula::dimacs(bool header)
+void Formula::dimacs(string fileName, bool header)
 {
+    FILE *out = fileName == "" ? stdout : fopen(fileName.c_str(), "w");
+    if ( out == NULL )
+    {
+        fprintf(stderr, "Failed to open %s to write!\n", fileName.c_str());
+        exit(1);
+    }
+
     if ( header )
-        printf("p cnf %d %d\n", getVarCnt(), getClauseCnt());
+        fprintf(out, "p cnf %d %d\n", getVarCnt(), getClauseCnt());
 
     for( Clause c : clauses )
     {
-        if ( c.xor_clause ) printf("x ");
+        if ( c.xor_clause ) fprintf(out, "x ");
         for( int v : c.lits )
-            printf("%d ", v);
-        printf("0\n");
+            fprintf(out, "%d ", v);
+        fprintf(out, "0\n");
     }
 
     for( auto e : varNames )
-        printf("c %s %d\n", e.first.c_str(), e.second);
+        fprintf(out, "c %s %d\n", e.first.c_str(), e.second);
+
+    fclose(out);
 }
 
 int Formula::clauseCheck()

@@ -59,7 +59,7 @@ class Formula
         void setAdderType(AdderType type) { adderType = type; }
         void setMultiAdderType(MultiAdderType type) { multiAdderType = type; }
 
-        void dimacs(bool header = true);                                        // Prints the current clause database in DIMACS format to stdout
+        void dimacs(string fileName = "", bool header = true);                                        // Prints the current clause database in DIMACS format to 'fileName'. If 'fileName' is not given, prints to stdout
 
         /* operations */
         void rotl(int *z, int *x, int p, int n = 32);                           // Rotate left 'p' postitions
