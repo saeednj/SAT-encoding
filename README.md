@@ -4,8 +4,11 @@ Each folder contains codes for encoding some problems into Boolean satisfiabilit
 instances. The generated instances are in DIMACS format which is the default input format
 of modern SAT solvers.
 
-* `core`: the encoder for the basic operations and other encoders use it.
-* `coloring`: Graph coloring problems
+The following is a high-level description of each folder, for more detailed description check out
+the README in each folder. To make each of the encoders, run the `Makefile` within that folder.
+
+* `core`: the encoder for the basic operations. Other encoders use it.
+* `graph`: Graph problems
     - `total-coloring`: Generates an instance of [Total Coloring][1] of a complete graph with the
       conjectured upper limit.
 * `crypto`: Cryptographic problems
