@@ -1,9 +1,8 @@
 #include "sha256.h"
 
 SHA256::SHA256(int rnds, bool initBlock)
+    : MDHash(16, 8, rnds, initBlock)
 {
-    rounds = rnds;
-    initialBlock = initBlock;
 }
 
 void SHA256::encode()
@@ -12,7 +11,7 @@ void SHA256::encode()
         cnf.newVars(w[i], 32, "w"+to_string(i));
 
     for( int i=0; i<8; i++ )
-        cnf.newVars(in[i], 32);
+        cnf.newVars(chain[i], 32);
 
     for( int i=0; i<8; i++ )
         cnf.newVars(out[i], 32, "hash"+to_string(i));
@@ -65,24 +64,24 @@ void SHA256::encode()
     /* Initialization vector */
     if ( initialBlock )
     {
-        cnf.fixedValue(in[0], 0x6a09e667);
-        cnf.fixedValue(in[1], 0xbb67ae85);
-        cnf.fixedValue(in[2], 0x3c6ef372);
-        cnf.fixedValue(in[3], 0xa54ff53a);
-        cnf.fixedValue(in[4], 0x510e527f);
-        cnf.fixedValue(in[5], 0x9b05688c);
-        cnf.fixedValue(in[6], 0x1f83d9ab);
-        cnf.fixedValue(in[7], 0x5be0cd19);
+        cnf.fixedValue(chain[0], 0x6a09e667);
+        cnf.fixedValue(chain[1], 0xbb67ae85);
+        cnf.fixedValue(chain[2], 0x3c6ef372);
+        cnf.fixedValue(chain[3], 0xa54ff53a);
+        cnf.fixedValue(chain[4], 0x510e527f);
+        cnf.fixedValue(chain[5], 0x9b05688c);
+        cnf.fixedValue(chain[6], 0x1f83d9ab);
+        cnf.fixedValue(chain[7], 0x5be0cd19);
     }
 
-    cnf.assign(A[3], in[0]);
-    cnf.assign(A[2], in[1]);
-    cnf.assign(A[1], in[2]);
-    cnf.assign(A[0], in[3]);
-    cnf.assign(E[3], in[4]);
-    cnf.assign(E[2], in[5]);
-    cnf.assign(E[1], in[6]);
-    cnf.assign(E[0], in[7]);
+    cnf.assign(A[3], chain[0]);
+    cnf.assign(A[2], chain[1]);
+    cnf.assign(A[1], chain[2]);
+    cnf.assign(A[0], chain[3]);
+    cnf.assign(E[3], chain[4]);
+    cnf.assign(E[2], chain[5]);
+    cnf.assign(E[1], chain[6]);
+    cnf.assign(E[0], chain[7]);
 
     /* Main loop */
     for( int i=0; i<rounds; i++ )
@@ -109,20 +108,14 @@ void SHA256::encode()
     }
 
     /* Final addition */
-    cnf.add2(out[0], in[0], A[rounds+3]);
-    cnf.add2(out[1], in[1], A[rounds+2]);
-    cnf.add2(out[2], in[2], A[rounds+1]);
-    cnf.add2(out[3], in[3], A[rounds]);
-    cnf.add2(out[4], in[4], E[rounds+3]);
-    cnf.add2(out[5], in[5], E[rounds+2]);
-    cnf.add2(out[6], in[6], E[rounds+1]);
-    cnf.add2(out[7], in[7], E[rounds]);
-}
-
-void SHA256::fixOutput(unsigned target[8])
-{
-    for( int i=0; i<8; i++ )
-        cnf.fixedValue(out[i], target[i]);
+    cnf.add2(out[0], chain[0], A[rounds+3]);
+    cnf.add2(out[1], chain[1], A[rounds+2]);
+    cnf.add2(out[2], chain[2], A[rounds+1]);
+    cnf.add2(out[3], chain[3], A[rounds]);
+    cnf.add2(out[4], chain[4], E[rounds+3]);
+    cnf.add2(out[5], chain[5], E[rounds+2]);
+    cnf.add2(out[6], chain[6], E[rounds+1]);
+    cnf.add2(out[7], chain[7], E[rounds]);
 }
 
 void SHA256::Sigma0(int *z, int *x)
@@ -142,3 +135,4 @@ void SHA256::Sigma1(int *z, int *x)
     cnf.rotr(r3, x, 25);
     cnf.xor3(z, r1, r2, r3);
 }
+

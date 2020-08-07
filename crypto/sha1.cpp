@@ -1,10 +1,8 @@
 #include "sha1.h"
-#include "formula.h"
 
 SHA1::SHA1(int rnds, bool initBlock)
+    : MDHash(16, 5, rnds, initBlock)
 {
-    rounds = rnds;
-    initialBlock = initBlock;
 }
 
 void SHA1::encode()
@@ -17,7 +15,7 @@ void SHA1::encode()
         cnf.newVars(wt[i], 32, "w"+to_string(i));
 
     for( int i=0; i<5; i++ )
-        cnf.newVars(in[i], 32);
+        cnf.newVars(chain[i], 32);
 
     for( int i=0; i<5; i++ )
         cnf.newVars(out[i], 32, "hash"+to_string(i));
@@ -44,18 +42,18 @@ void SHA1::encode()
     /* Initialization vector */
     if ( initialBlock )
     {
-        cnf.fixedValue(in[0], 0x67452301);
-        cnf.fixedValue(in[1], 0xefcdab89);
-        cnf.fixedValue(in[2], 0x98badcfe);
-        cnf.fixedValue(in[3], 0x10325476);
-        cnf.fixedValue(in[4], 0xc3d2e1f0);
+        cnf.fixedValue(chain[0], 0x67452301);
+        cnf.fixedValue(chain[1], 0xefcdab89);
+        cnf.fixedValue(chain[2], 0x98badcfe);
+        cnf.fixedValue(chain[3], 0x10325476);
+        cnf.fixedValue(chain[4], 0xc3d2e1f0);
     }
 
-    cnf.rotl(a[4], in[0], 0);
-    cnf.rotl(a[3], in[1], 0);
-    cnf.rotl(a[2], in[2], 2);
-    cnf.rotl(a[1], in[3], 2);
-    cnf.rotl(a[0], in[4], 2);
+    cnf.rotl(a[4], chain[0], 0);
+    cnf.rotl(a[3], chain[1], 0);
+    cnf.rotl(a[2], chain[2], 2);
+    cnf.rotl(a[1], chain[3], 2);
+    cnf.rotl(a[0], chain[4], 2);
 
     /* Main loop */
     for( int i=0; i<rounds; i++ )
@@ -101,15 +99,11 @@ void SHA1::encode()
     cnf.rotl(e, a[rounds], 30);
 
     /* Final addition */
-    cnf.add2(out[0], in[0], a[rounds+4]);
-    cnf.add2(out[1], in[1], a[rounds+3]);
-    cnf.add2(out[2], in[2], c);
-    cnf.add2(out[3], in[3], d);
-    cnf.add2(out[4], in[4], e);
+    cnf.add2(out[0], chain[0], a[rounds+4]);
+    cnf.add2(out[1], chain[1], a[rounds+3]);
+    cnf.add2(out[2], chain[2], c);
+    cnf.add2(out[3], chain[3], d);
+    cnf.add2(out[4], chain[4], e);
 }
 
-void SHA1::fixOutput(unsigned target[5])
-{
-    for( int i=0; i<5; i++ )
-        cnf.fixedValue(out[i], target[i]);
-}
+

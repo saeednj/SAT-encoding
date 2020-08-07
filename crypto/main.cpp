@@ -27,129 +27,76 @@ int cfg_print_target;
 FuncType cfg_function;
 AnalysisType cfg_analysis;
 
-
 void preimage(int rounds)
 {
+    MDHash *f;
+
     if ( cfg_function == FT_SHA1 )
-    {
-        SHA1 f(rounds);
-        if ( cfg_use_xor_clauses ) f.cnf.setUseXORClauses();
-        if ( cfg_multi_adder_type != Formula::MAT_NONE ) f.cnf.setMultiAdderType(cfg_multi_adder_type);
-        f.encode();
-
-        unsigned w[80];
-        unsigned hash[5];
-
-        if ( cfg_use_rand )
-        {
-            /* Generate a random pair of input/target */
-            for( int i=0; i<16; i++ )
-                w[i] = lrand48();
-
-            sha1_comp(w, hash, rounds);
-
-            if ( cfg_print_target )
-            {
-                for( int i=0; i<16; i++ )
-                    printf("%08x ", w[i]);
-                printf("\n");
-
-                for( int i=0; i<5; i++ )
-                    printf("%08x ", hash[i]);
-                printf("\n");
-
-                return;
-            }
-        }
-        else
-        {
-            /* Read the randomly generated input and its hash */
-            for( int i=0; i<16; i++ )
-                scanf("%x", &w[i]);
-
-            for( int i=0; i<5; i++ )
-                scanf("%x", &hash[i]);
-
-            /* Double checking the message words with hash target */
-            unsigned h[5];
-            sha1_comp(w, h, rounds);
-            assert( hash[0] == h[0] );
-            assert( hash[1] == h[1] );
-            assert( hash[2] == h[2] );
-            assert( hash[3] == h[3] );
-            assert( hash[4] == h[4] );
-        }
-
-        /* Set hash target bits */
-        f.fixOutput(hash);
-
-        /* Printing out the instance */
-        f.cnf.dimacs();
-    }
+        f = new SHA1(rounds);
     else if ( cfg_function == FT_SHA256 )
-    {
-        SHA256 f(rounds);
-        if ( cfg_use_xor_clauses ) f.cnf.setUseXORClauses();
-        if ( cfg_multi_adder_type != Formula::MAT_NONE ) f.cnf.setMultiAdderType(cfg_multi_adder_type);
-        f.encode();
-
-        unsigned w[64];
-        unsigned hash[8];
-
-        if ( cfg_use_rand )
-        {
-            /* Generate a random pair of input/target */
-            for( int i=0; i<16; i++ )
-                w[i] = lrand48();
-
-            sha256_comp(w, hash, rounds);
-
-            if ( cfg_print_target )
-            {
-                for( int i=0; i<16; i++ )
-                    printf("%08x ", w[i]);
-                printf("\n");
-
-                for( int i=0; i<8; i++ )
-                    printf("%08x ", hash[i]);
-                printf("\n");
-
-                return;
-            }
-        }
-        else
-        {
-            /* Read the randomly generated input and its hash */
-            for( int i=0; i<16; i++ )
-                scanf("%x", &w[i]);
-
-            for( int i=0; i<8; i++ )
-                scanf("%x", &hash[i]);
-
-            /* Double checking the message words with hash target */
-            unsigned h[8];
-            sha256_comp(w, h, rounds);
-            assert( hash[0] == h[0] );
-            assert( hash[1] == h[1] );
-            assert( hash[2] == h[2] );
-            assert( hash[3] == h[3] );
-            assert( hash[4] == h[4] );
-            assert( hash[5] == h[5] );
-            assert( hash[6] == h[6] );
-            assert( hash[7] == h[7] );
-        }
-
-
-        /* Set hash target bits */
-        f.fixOutput(hash);
-
-        /* Printing out the instance */
-        f.cnf.dimacs();
-    }
+        f = new SHA256(rounds);
     else
     {
         fprintf(stderr, "Invalid function type!\n");
+        return;
     }
+
+    if ( cfg_use_xor_clauses ) f->cnf.setUseXORClauses();
+    if ( cfg_multi_adder_type != Formula::MAT_NONE ) f->cnf.setMultiAdderType(cfg_multi_adder_type);
+
+    f->encode();
+
+    unsigned w[rounds];
+    unsigned hash[f->outputSize];
+
+    if ( cfg_use_rand )
+    {
+        /* Generate a random pair of input/target */
+        for( int i=0; i<f->inputSize; i++ )
+            w[i] = lrand48();
+
+        if ( cfg_function == FT_SHA1 )
+            sha1_comp(w, hash, rounds);
+        else if ( cfg_function == FT_SHA256 )
+            sha256_comp(w, hash, rounds);
+
+        if ( cfg_print_target )
+        {
+            for( int i=0; i<f->inputSize; i++ )
+                printf("%08x ", w[i]);
+            printf("\n");
+
+            for( int i=0; i<f->outputSize; i++ )
+                printf("%08x ", hash[i]);
+            printf("\n");
+
+            return;
+        }
+    }
+    else
+    {
+        /* Read the randomly generated input and its hash */
+        for( int i=0; i<f->inputSize; i++ )
+            scanf("%x", &w[i]);
+
+        for( int i=0; i<f->outputSize; i++ )
+            scanf("%x", &hash[i]);
+
+        /* Double checking the message words with hash target */
+        unsigned h[f->outputSize];
+        if ( cfg_function == FT_SHA1 )
+            sha1_comp(w, h, rounds);
+        else if ( cfg_function == FT_SHA256 )
+            sha256_comp(w, h, rounds);
+        for( int i=0; i<f->outputSize; i++ )
+            assert( hash[i] == h[i] );
+    }
+
+    /* Set hash target bits */
+    f->fixOutput(hash);
+
+    /* Printing out the instance */
+    f->cnf.dimacs();
 }
 
 void display_usage()

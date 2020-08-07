@@ -17,7 +17,7 @@ unsigned shr(unsigned x, int n)
     return (x >> n);
 }
 
-void sha1_comp(unsigned w[80], unsigned h[5], int rounds, bool chaining)
+void sha1_comp(unsigned *w, unsigned *h, int rounds, bool chaining)
 {
     if ( !chaining )
     {
@@ -76,7 +76,7 @@ void sha1_comp(unsigned w[80], unsigned h[5], int rounds, bool chaining)
 	h[4] += e;
 }
 
-void sha1_msg(unsigned char* m, int size, unsigned hash[5], int rounds)
+void sha1_msg(unsigned char* m, int size, unsigned *hash, int rounds)
 {
     /* Initialize variables */
     unsigned h[5];
@@ -124,7 +124,7 @@ void sha1_msg(unsigned char* m, int size, unsigned hash[5], int rounds)
 }
 
 
-void sha256_comp(unsigned w[64], unsigned H[8], int rounds, bool chaining)
+void sha256_comp(unsigned *w, unsigned *H, int rounds, bool chaining)
 {
     /*Note 1: All variables are 32 bit unsigned integers and addition is calculated modulo 232
       Note 2: For each round, there is one round constant k[i] and one entry in the message schedule array w[i], 0 ≤ i ≤ 63
@@ -210,7 +210,7 @@ void sha256_comp(unsigned w[64], unsigned H[8], int rounds, bool chaining)
     H[7] += h;
 }
 
-void sha256_msg(unsigned char* m, int size, unsigned hash[8], int rounds)
+void sha256_msg(unsigned char* m, int size, unsigned *hash, int rounds)
 {
     /*Note 1: All variables are 32 bit unsigned integers and addition is calculated modulo 232
       Note 2: For each round, there is one round constant k[i] and one entry in the message schedule array w[i], 0 ≤ i ≤ 63
