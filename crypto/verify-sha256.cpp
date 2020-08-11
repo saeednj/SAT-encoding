@@ -38,8 +38,8 @@ int main(int argc, char** argv)
     }*/
 
     char res[20];
-    scanf("%s", res);
-    if ( res[0] != 'S' )
+    int r = scanf("%s", res);
+    if ( r != 0 && res[0] != 'S' )
     {
         printf("Verdict is missing or the result is UNSAT!!\n");
         return 1;
