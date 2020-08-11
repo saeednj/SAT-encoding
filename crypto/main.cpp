@@ -1,5 +1,6 @@
 #include "sha1.h"
 #include "sha256.h"
+#include "md4.h"
 #include "util.h"
 #include <stdlib.h>
 #include <string.h>
@@ -8,6 +9,7 @@
 #include <getopt.h>
 
 enum FuncType {
+    FT_MD4,
     FT_SHA1,
     FT_SHA256,
     FT_NONE
@@ -35,6 +37,8 @@ void preimage(int rounds)
         f = new SHA1(rounds);
     else if ( cfg_function == FT_SHA256 )
         f = new SHA256(rounds);
+    else if ( cfg_function == FT_MD4 )
+        f = new MD4(rounds);
     else
     {
         fprintf(stderr, "Invalid function type!\n");
@@ -59,6 +63,8 @@ void preimage(int rounds)
             sha1_comp(w, hash, rounds);
         else if ( cfg_function == FT_SHA256 )
             sha256_comp(w, hash, rounds);
+        else if ( cfg_function == FT_MD4 )
+            md4_comp(w, hash, rounds);
 
         if ( cfg_print_target )
         {
@@ -76,11 +82,15 @@ void preimage(int rounds)
     else
     {
         /* Read the randomly generated input and its hash */
+        int rcnt = 0;
         for( int i=0; i<f->inputSize; i++ )
-            scanf("%x", &w[i]);
+            rcnt += scanf("%x", &w[i]);
+        assert( rcnt == f->inputSize );
 
+        rcnt = 0;
         for( int i=0; i<f->outputSize; i++ )
-            scanf("%x", &hash[i]);
+            rcnt += scanf("%x", &hash[i]);
+        assert( rcnt == f->outputSize );
 
         /* Double checking the message words with hash target */
         unsigned h[f->outputSize];
@@ -88,6 +98,9 @@ void preimage(int rounds)
             sha1_comp(w, h, rounds);
         else if ( cfg_function == FT_SHA256 )
             sha256_comp(w, h, rounds);
+        else if ( cfg_function == FT_MD4 )
+            md4_comp(w, hash, rounds);
+
         for( int i=0; i<f->outputSize; i++ )
             assert( hash[i] == h[i] );
     }
@@ -97,6 +110,8 @@ void preimage(int rounds)
 
     /* Printing out the instance */
     f->cnf.dimacs();
+
+    delete f;
 }
 
 void display_usage()
@@ -108,7 +123,7 @@ void display_usage()
             "                                           Specifies the type of multi operand addition encoding (default: espresso)\n"
             "  --random_target                          Generate a random input/target pair (instead of reading from stdin)\n"
             "  --rounds or -r {int(16..80)}             Number of rounds in your function\n"
-            "  --function or -f {sha1 | sha256}         Type of function under analysis (default: sha1)\n"
+            "  --function or -f {md4 | sha1 | sha256}   Type of function under analysis (default: sha1)\n"
             "  --analysis or -a {preimage | collision}  Type of analysis (default: preimage)\n"
             "  --print_target                           Prints the randomly generated message/target and exits (--random_target should be given)\n"
           );
@@ -177,6 +192,7 @@ int main(int argc, char **argv)
             case 'f':
                 cfg_function = strcmp(optarg, "sha1") == 0 ? FT_SHA1 :
                     strcmp(optarg, "sha256") == 0 ? FT_SHA256 : 
+                    strcmp(optarg, "md4") == 0 ? FT_MD4 : 
                     FT_NONE;
                 if ( cfg_function == FT_NONE )
                 {

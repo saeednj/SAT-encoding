@@ -10,4 +10,5 @@ void sha1_msg(unsigned char* m, int size, unsigned *hash, int rounds);
 void sha256_comp(unsigned *w, unsigned *H, int rounds = 64, bool chaining = false);
 void sha256_msg(unsigned char* m, int size, unsigned *hash, int rounds);
 
+void md4_comp(unsigned *w, unsigned *h, int rounds = 48, bool chaining = false);
 #endif

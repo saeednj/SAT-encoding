@@ -1,5 +1,6 @@
 #include "util.h"
 #include <vector>
+#include <stdio.h>
 using namespace std;
 
 unsigned rotl(unsigned x, int n)
@@ -287,4 +288,68 @@ void sha256_msg(unsigned char* m, int size, unsigned *hash, int rounds)
 
     for( int i=0; i<8; i++ )
         hash[i] = H[i];
+}
+
+void md4_comp(unsigned *w, unsigned *h, int rounds, bool chaining)
+{
+    if ( !chaining )
+    {
+        h[0] = 0x67452301;
+        h[1] = 0xefcdab89;
+        h[2] = 0x98badcfe;
+        h[3] = 0x10325476;
+    }
+
+    /* Round rotations */
+    int s[48] = {
+         3,  7, 11, 19,  3,  7, 11, 19,  3,  7, 11, 19,  3,  7, 11, 19,
+         3,  5,  9, 13,  3,  5,  9, 13,  3,  5,  9, 13,  3,  5,  9, 13,
+         3,  9, 11, 15,  3,  9, 11, 15,  3,  9, 11, 15,  3,  9, 11, 15,
+    };
+
+    /* Round message word indices */
+    int ind[48] = {
+         0,  1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15,
+         0,  4,  8, 12,  1,  5,  9, 13,  2,  6, 10, 14,  3,  7, 11, 15,
+         0,  8,  4, 12,  2, 10,  6, 14,  1,  9,  5, 13,  3, 11,  7, 15,
+    };
+
+    unsigned A = h[0];
+    unsigned B = h[1];
+    unsigned C = h[2];
+    unsigned D = h[3];
+
+    unsigned v[4] = {A, B, C, D};
+
+    for( int i=0; i<rounds; i++ )
+    {
+        unsigned &a = v[(48-i)%4];
+        unsigned &b = v[((48-i)%4+1)%4];
+        unsigned &c = v[((48-i)%4+2)%4];
+        unsigned &d = v[((48-i)%4+3)%4];
+
+        unsigned f, k;
+        if ( i < 16 )
+        {
+            f = (b & c) | ((~b) & d);
+            k = 0;
+        }
+        else if ( i < 32 )
+        {
+            f = (b & c) | (b & d) | (c & d);
+            k = 0x5a827999;
+        }
+        else
+        {
+            f = (b ^ c ^ d);
+            k = 0x6ed9eba1;
+        }
+
+        a = rotl(a + f + w[ind[i]] + k, s[i]);
+    }
+
+    h[0] += v[0];
+    h[1] += v[1];
+    h[2] += v[2];
+    h[3] += v[3];
 }
