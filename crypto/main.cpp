@@ -24,7 +24,7 @@ enum AnalysisType {
 /* config options */
 int cfg_use_xor_clauses;
 Formula::MultiAdderType cfg_multi_adder_type;
-int cfg_use_rand;
+int cfg_rand_target;
 int cfg_print_target;
 FuncType cfg_function;
 AnalysisType cfg_analysis;
@@ -53,7 +53,7 @@ void preimage(int rounds)
     unsigned w[rounds];
     unsigned hash[f->outputSize];
 
-    if ( cfg_use_rand )
+    if ( cfg_rand_target )
     {
         /* Generate a random pair of input/target */
         for( int i=0; i<f->inputSize; i++ )
@@ -81,28 +81,11 @@ void preimage(int rounds)
     }
     else
     {
-        /* Read the randomly generated input and its hash */
+        /* Read the target from stdin */
         int rcnt = 0;
-        for( int i=0; i<f->inputSize; i++ )
-            rcnt += scanf("%x", &w[i]);
-        assert( rcnt == f->inputSize );
-
-        rcnt = 0;
         for( int i=0; i<f->outputSize; i++ )
             rcnt += scanf("%x", &hash[i]);
         assert( rcnt == f->outputSize );
-
-        /* Double checking the message words with hash target */
-        unsigned h[f->outputSize];
-        if ( cfg_function == FT_SHA1 )
-            sha1_comp(w, h, rounds);
-        else if ( cfg_function == FT_SHA256 )
-            sha256_comp(w, h, rounds);
-        else if ( cfg_function == FT_MD4 )
-            md4_comp(w, hash, rounds);
-
-        for( int i=0; i<f->outputSize; i++ )
-            assert( hash[i] == h[i] );
     }
 
     /* Set hash target bits */
@@ -121,11 +104,13 @@ void display_usage()
             "  --xor                                    Use XOR clauses (default: off)\n"
             "  --adder_type or -A {two_operand | counter_chain | espresso | dot_matrix}\n"
             "                                           Specifies the type of multi operand addition encoding (default: espresso)\n"
-            "  --random_target                          Generate a random input/target pair (instead of reading from stdin)\n"
+            "  --target or -t {random | stdin}          Hash target (default: random)\n"
+            "                                           random: Generates a random input/target pair\n"
+            "                                           stdin: Reads the target from stdin (space separated hex values)\n"
             "  --rounds or -r {int(16..80)}             Number of rounds in your function\n"
             "  --function or -f {md4 | sha1 | sha256}   Type of function under analysis (default: sha1)\n"
             "  --analysis or -a {preimage | collision}  Type of analysis (default: preimage)\n"
-            "  --print_target                           Prints the randomly generated message/target and exits (--random_target should be given)\n"
+            "  --print_target                           Prints the randomly generated message/target and exits (--target should be given in random mode)\n"
           );
 }
 
@@ -137,7 +122,7 @@ int main(int argc, char **argv)
     /* Arguments default values */
     cfg_use_xor_clauses = 0;
     cfg_multi_adder_type = Formula::MAT_NONE;
-    cfg_use_rand = 0;
+    cfg_rand_target = 1;
     cfg_print_target = 0;
     cfg_function = FT_SHA1;
     cfg_analysis = AT_PREIMAGE;
@@ -147,20 +132,20 @@ int main(int argc, char **argv)
     {
         /* flag options */
         {"xor",           no_argument, &cfg_use_xor_clauses,   1},
-        {"random_target", no_argument, &cfg_use_rand,          1},
         {"print_target",  no_argument, &cfg_print_target,      1},
         /* valued options */
         {"rounds",   required_argument, 0, 'r'},
         {"function", required_argument, 0, 'f'},
         {"analysis", required_argument, 0, 'a'},
         {"adder_type", required_argument, 0, 'A'},
+        {"target", required_argument, 0, 't'},
         {"help",     no_argument,       0, 'h'},
         {0, 0, 0, 0}
     };
 
     /* Process command line */
     int c, option_index;
-    while( (c = getopt_long(argc, argv, "a:r:f:A:h", long_options, &option_index)) != -1 )
+    while( (c = getopt_long(argc, argv, "a:r:f:A:t:h", long_options, &option_index)) != -1 )
     {
         switch ( c )
         {
@@ -211,6 +196,17 @@ int main(int argc, char **argv)
                 if ( cfg_multi_adder_type == Formula::MAT_NONE )
                 {
                     fprintf(stderr, "Invalid or missing multi-adder type!\nUse -h to see the optionsi\n");
+                    return 1;
+                }
+                break;
+
+            case 't':
+                cfg_rand_target = strcmp(optarg, "random") == 0 ? 1 :
+                    strcmp(optarg, "stdin") == 0 ? 0 :
+                    -1;
+                if (cfg_rand_target == -1)
+                {
+                    fprintf(stderr, "Invalid or missing target type!\nUse -t or --target with random or stdin\n");
                     return 1;
                 }
                 break;
