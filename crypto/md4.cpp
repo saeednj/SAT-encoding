@@ -3,6 +3,7 @@
 MD4::MD4(int rnds, bool initBlock)
     : MDHash(16, 4, rnds, initBlock)
 {
+    dobbertin = false;
 }
 
 void MD4::encode()
@@ -78,6 +79,22 @@ void MD4::encode()
         }
 
         cnf.rotl(q[i+4], t, s[i]);
+    }
+
+    // Dobbertin attack's conditions
+    if ( dobbertin )
+    {
+        cnf.fixedValue(q[17], 0);
+        cnf.fixedValue(q[18], 0);
+        cnf.fixedValue(q[20], 0);
+        cnf.fixedValue(q[21], 0);
+        cnf.fixedValue(q[22], 0);
+        cnf.fixedValue(q[24], 0);
+        cnf.fixedValue(q[25], 0);
+        cnf.fixedValue(q[26], 0);
+        cnf.fixedValue(q[28], 0);
+        cnf.fixedValue(q[29], 0);
+        cnf.fixedValue(q[30], 0);
     }
 
     int R = rounds, r = rounds % 4;

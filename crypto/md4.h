@@ -9,9 +9,8 @@ class MD4 : public MDHash {
 
         void encode();
 
-        //Word q[52];
-        int q[52][32];
-
+        Word q[52];
+        bool dobbertin;
 };
 
 #endif
