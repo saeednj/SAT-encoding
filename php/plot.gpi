@@ -1,0 +1,8 @@
+set term pngcairo
+
+set output "plot.png"
+
+plot "basic.times" w lp t "basic", \
+    "amo_espresso.times" w lp t "AMO-espresso-adder", \
+    "amo_fa.times" w lp t "AMO-Single-column-FA", \
+    "amo_seq.times" w lp t "AMO-Sequential-Counter"
