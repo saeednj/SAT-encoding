@@ -28,6 +28,7 @@ int cfg_rand_target;
 int cfg_print_target;
 FuncType cfg_function;
 AnalysisType cfg_analysis;
+int fixed_bits;
 
 void preimage(int rounds)
 {
@@ -81,8 +82,13 @@ void preimage(int rounds)
     }
     else
     {
-        /* Read the target from stdin */
+        /* Read the input/target from stdin */
         int rcnt = 0;
+        for( int i=0; i<f->inputSize; i++ )
+            rcnt += scanf("%x", &w[i]);
+        assert( rcnt == f->inputSize );
+
+        rcnt = 0;
         for( int i=0; i<f->outputSize; i++ )
             rcnt += scanf("%x", &hash[i]);
         assert( rcnt == f->outputSize );
@@ -90,6 +96,14 @@ void preimage(int rounds)
 
     /* Set hash target bits */
     f->fixOutput(hash);
+
+    /* Fix input bits (if asked) */
+    for(int i=0; i<fixed_bits; i++)
+    {
+        int r = i / 32;
+        int c = i % 32;
+        f->cnf.fixedValue(&(f->w[r][c]), (w[r] >> c) & 1, 1);
+    }
 
     /* Printing out the instance */
     f->cnf.dimacs();
@@ -110,7 +124,8 @@ void display_usage()
             "  --rounds or -r {int(16..80)}             Number of rounds in your function\n"
             "  --function or -f {md4 | sha1 | sha256}   Type of function under analysis (default: sha1)\n"
             "  --analysis or -a {preimage | collision}  Type of analysis (default: preimage)\n"
-            "  --print_target                           Prints the randomly generated message/target and exits (--target should be given in random mode)\n"
+            "  --print_target                           Prints the randomly generated message/target and exits (--target should be set to random mode)\n"
+            "  --fix or -F {int(0..512)}                Fixes the given number (k) of input bits (in the range 0..(k-1)) (default: 0)\n"
           );
 }
 
@@ -127,6 +142,7 @@ int main(int argc, char **argv)
     cfg_function = FT_SHA1;
     cfg_analysis = AT_PREIMAGE;
     int rounds = -1;
+    fixed_bits = 0;
 
     struct option long_options[] =
     {
@@ -135,6 +151,7 @@ int main(int argc, char **argv)
         {"print_target",  no_argument, &cfg_print_target,      1},
         /* valued options */
         {"rounds",   required_argument, 0, 'r'},
+        {"fix",   required_argument, 0, 'F'},
         {"function", required_argument, 0, 'f'},
         {"analysis", required_argument, 0, 'a'},
         {"adder_type", required_argument, 0, 'A'},
@@ -145,7 +162,7 @@ int main(int argc, char **argv)
 
     /* Process command line */
     int c, option_index;
-    while( (c = getopt_long(argc, argv, "a:r:f:A:t:h", long_options, &option_index)) != -1 )
+    while( (c = getopt_long(argc, argv, "a:r:f:F:A:t:h", long_options, &option_index)) != -1 )
     {
         switch ( c )
         {
@@ -161,6 +178,15 @@ int main(int argc, char **argv)
 
             case 'r':
                 rounds = atoi(optarg);
+                break;
+
+            case 'F':
+                fixed_bits = atoi(optarg);
+                if (fixed_bits < 0 || fixed_bits > 512)
+                {
+                    fprintf(stderr, "Inavlid number of input bits to fix\n");
+                    return 1;
+                }
                 break;
 
             case 'a':
