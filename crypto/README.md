@@ -1,6 +1,6 @@
 # Encoding Cryptanalysis of hash functions into SAT
 
-This folder implements encoding of cryptanalysis of cryptographic hash function
+This folder implements encoding of cryptanalysis of cryptographic hash functions
 into SAT.
 
 Three standard hash functions of MD4, SHA-1 and SHA-256 are supported. The main
@@ -18,12 +18,12 @@ For example:
 ```
 
 generates a preimage instance for a 20 round SHA-256 with a randomly generated
-target output. You can also specify the type adder encodings, which is
+target output. You can also specify the type of adder encodings, which is
 implemented in the `core` encoder. Note that using `espresso` adders requires
 having `espresso` logic minimizer installed.
 
 ## Verify
-To verify that the solution that is gotten from a SAT solver actually hashes to
+To verify that the solution found by a SAT solver actually hashes to
 the target, you can use vrifiers for each hash function. First, to build them,
 run `make verify`. For example, consider that you solved the above created
 instance and recorded the solution in `sha256-20-preimage.sol`. To verify the
