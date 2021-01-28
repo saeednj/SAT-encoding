@@ -3,6 +3,7 @@
 #include <math.h>
 #include <assert.h>
 #include <string.h>
+#include <errno.h>
 #include <sys/wait.h>
 
 Formula::Formula(string name)
@@ -67,12 +68,6 @@ void Formula::rotl(int *z, int *x, int p, int n)
 	for( int i=0; i<n; i++ )
 		z[i] = x[(i + n - p) % n];
 }
-
-/*void Formula::shr(int *z, int *x, int n)
-{
-	for( int i=n; i<32; i++ )
-		z[i] = x[i-n];
-}*/
 
 void Formula::and2(int *z, int *x, int *y, int n)
 {
