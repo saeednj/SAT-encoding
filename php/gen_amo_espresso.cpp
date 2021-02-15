@@ -8,7 +8,7 @@ int main(int argc, char** argv)
 {
     int n = atoi(argv[1]);
     Formula f;
-    f.setUseFACardinality();
+    f.setPBMethod(Formula::ADDER_NETWORK_ESPRESSO);
 
     int v[n][n-1];
     for( int i=0; i<n; i++ )
@@ -25,7 +25,7 @@ int main(int argc, char** argv)
     {
         for( int i=0; i<n; i++ )
             x[i] = v[i][j];
-        f.cardinality(x, n, 1);
+        f.exactlyK(x, n, 1);
     }
     f.dimacs();
 

@@ -40,6 +40,13 @@ class Formula
         int getVarCnt() { return varCnt; }
         int getClauseCnt() { return clauses.size(); }
 
+        enum PBMethod {
+            PBM_NONE,
+            SEQUENTIAL_COUNTER,
+            ADDER_NETWORK_FA,
+            ADDER_NETWORK_ESPRESSO,
+        };
+
         enum AdderType {
             AT_NONE,
             RIPPLE_CARRY,
@@ -55,13 +62,13 @@ class Formula
 
         void setVarID(int v) { varID = v; }                                     // Sets the starting point of variable IDs
         void setUseXORClauses() { useXORClauses = true; }
-        void setUseFACardinality() { useFACardinality = true; }
+        void setPBMethod(PBMethod method) { pbMethod = method; }
         void setAdderType(AdderType type) { adderType = type; }
         void setMultiAdderType(MultiAdderType type) { multiAdderType = type; }
 
-        void dimacs(string fileName = "", bool header = true);                                        // Prints the current clause database in DIMACS format to 'fileName'. If 'fileName' is not given, prints to stdout
+        void dimacs(string fileName = "", bool header = true);                  // Prints the current clause database in DIMACS format to 'fileName'. If 'fileName' is not given, prints to stdout
 
-        /* operations */
+        /* bitwise operations */
         void rotl(int *z, int *x, int p, int n = 32);                           // Rotate left 'p' postitions
         void rotr(int *z, int *x, int p, int n = 32) { rotl(z, x, n-p, n); }    // Rotate right 'p' positions
         void assign(int *z, int *x, int n = 32) { rotl(z, x, 0, n); }
@@ -85,7 +92,9 @@ class Formula
         void add5(int *z, int *a, int *b, int *c, int *d, int *e, int n = 32);  // z = a + b + c + d + e;
 
 
-        void cardinality(int *vars, int n, unsigned cardinalValue);             // Cardinality constraints: vars[0]+vars[1]+...+vars[n-1] == cardinalValue 
+        void atMostK(int *x, int n, unsigned k);                                // x[0]+...+x[n-1] <= k
+        void atLeastK(int *x, int n, unsigned k);                               // x[0]+...+x[n-1] >= k
+        void exactlyK(int *x, int n, unsigned k);                               // x[0]+...+x[n-1] == k
 
         int clauseCheck();                                                      // Mainly for debugging. Checks trivial invalid clauses 
 
@@ -98,7 +107,7 @@ class Formula
     protected:
         int varCnt, varID;
         bool useXORClauses;
-        bool useFACardinality;
+        PBMethod pbMethod;
         AdderType adderType;
         MultiAdderType multiAdderType;
         vector<Clause> clauses;
@@ -108,6 +117,8 @@ class Formula
         void counter(int *z, int *x, int n);
 
     private:
+        void cardinality_fulladder(int *vars, int n, unsigned cardinalValue);
+        void cardinality_espresso(int *vars, int n, unsigned cardinalValue);
 };
 
 

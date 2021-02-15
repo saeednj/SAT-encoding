@@ -11,7 +11,7 @@ Formula::Formula(string name)
     varID = 0;
     varCnt = 0;
     useXORClauses = false;
-    useFACardinality = false;
+    pbMethod = SEQUENTIAL_COUNTER;
     adderType = RIPPLE_CARRY;
     multiAdderType = ESPRESSO;
     formulaName = name;
@@ -699,8 +699,7 @@ int Formula::clauseCheck()
     return 0;
 }
 
-
-void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
+void Formula::cardinality_fulladder(int *vars, int n, unsigned cardinalValue)
 {
     unsigned int size = 1 + floor(log2(n));
     vector<queue<int>> m(size);
@@ -708,84 +707,93 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
         m[0].push(vars[i]);
 
     bool oneDeep = false;
-    if ( useFACardinality )
+    while( !oneDeep )
     {
-        while( !oneDeep )
+        oneDeep = true;
+        for( int i=0; i<m.size(); i++ )
         {
-            oneDeep = true;
-            for( int i=0; i<m.size(); i++ )
+            if ( m[i].size() >= 3 )
             {
-                if ( m[i].size() >= 3 )
+                int x = m[i].front(); m[i].pop();
+                int y = m[i].front(); m[i].pop();
+                int z = m[i].front(); m[i].pop();
+
+                int sum;
+                newVars(&sum, 1);
+                xor3(&sum, &x, &y, &z, 1);
+                m[i].push(sum);
+
+                if ( i+1 < m.size() )
                 {
-                    int x = m[i].front(); m[i].pop();
-                    int y = m[i].front(); m[i].pop();
-                    int z = m[i].front(); m[i].pop();
-
-                    int sum;
-                    newVars(&sum, 1);
-                    xor3(&sum, &x, &y, &z, 1);
-                    m[i].push(sum);
-
-                    if ( i+1 < m.size() )
-                    {
-                        int carry;
-                        newVars(&carry, 1);
-                        maj3(&carry, &x, &y, &z, 1);
-                        m[i+1].push(carry);
-                    }
+                    int carry;
+                    newVars(&carry, 1);
+                    maj3(&carry, &x, &y, &z, 1);
+                    m[i+1].push(carry);
                 }
-                else if ( m[i].size() >= 2 )
-                {
-                    int x = m[i].front(); m[i].pop();
-                    int y = m[i].front(); m[i].pop();
-
-                    int sum;
-                    newVars(&sum, 1);
-                    xor2(&sum, &x, &y, 1);
-                    m[i].push(sum);
-
-                    if ( i+1 < m.size() )
-                    {
-                        int carry;
-                        newVars(&carry, 1);
-                        and2(&carry, &x, &y, 1);
-                        m[i+1].push(carry);
-                    }
-                }
-
-                if ( m[i].size() > 1 ) oneDeep = false;
             }
+            else if ( m[i].size() >= 2 )
+            {
+                int x = m[i].front(); m[i].pop();
+                int y = m[i].front(); m[i].pop();
+
+                int sum;
+                newVars(&sum, 1);
+                xor2(&sum, &x, &y, 1);
+                m[i].push(sum);
+
+                if ( i+1 < m.size() )
+                {
+                    int carry;
+                    newVars(&carry, 1);
+                    and2(&carry, &x, &y, 1);
+                    m[i+1].push(carry);
+                }
+            }
+
+            if ( m[i].size() > 1 ) oneDeep = false;
         }
-
     }
-    else
+    for( int i=0; i<m.size(); i++ )
     {
-        while( !oneDeep )
+        int var = m[i].front();
+        unsigned val = (cardinalValue >> i) & 1;
+        fixedValue(&var, val, 1);
+    }
+}
+
+void Formula::cardinality_espresso(int *vars, int n, unsigned cardinalValue)
+{
+    unsigned int size = 1 + floor(log2(n));
+    vector<queue<int>> m(size);
+    for( int i=0; i<n; i++ )
+        m[0].push(vars[i]);
+
+    bool oneDeep = false;
+    while( !oneDeep )
+    {
+        oneDeep = true;
+        for( int i=0; i<m.size(); i++ )
         {
-            oneDeep = true;
-            for( int i=0; i<m.size(); i++ )
+            if ( m[i].size() >= 2 )
             {
-                if ( m[i].size() >= 2 )
+                int inpSize = m[i].size() > 10 ? 10 : m[i].size();
+                vector<int> addends;
+                for( int j=0; j<inpSize; j++ )
                 {
-                    int inpSize = m[i].size() > 10 ? 10 : m[i].size();
-                    vector<int> addends;
-                    for( int j=0; j<inpSize; j++ )
-                    {
-                        int x = m[i].front();
-                        m[i].pop();
-                        addends.push_back(x);
-                    }
-                    unsigned int slen = floor(log2(addends.size()));
-                    vector<int> sum(slen + 1);
-                    newVars(&sum[0], slen+1);
-                    espresso(addends, sum);
-
-                    for( int j=0; j<slen+1 && i+j<m.size(); j++ )
-                        m[i+j].push(sum[j]);
+                    int x = m[i].front();
+                    m[i].pop();
+                    addends.push_back(x);
                 }
+                unsigned int slen = floor(log2(addends.size()));
+                vector<int> sum(slen + 1);
+                newVars(&sum[0], slen+1);
+                espresso(addends, sum);
 
-                if ( m[i].size() > 1 ) oneDeep = false;
+                for( int j=0; j<slen+1 && i+j<m.size(); j++ )
+                    m[i+j].push(sum[j]);
             }
+
+            if ( m[i].size() > 1 ) oneDeep = false;
         }
     }
 
@@ -794,6 +802,55 @@ void Formula::cardinality(int *vars, int n, unsigned cardinalValue)
         int var = m[i].front();
         unsigned val = (cardinalValue >> i) & 1;
         fixedValue(&var, val, 1);
+    }
+}
+
+void Formula::atMostK(int *x, int n, unsigned k)
+{
+    int R[n-1][k];
+    for(int i=0; i<n-1; i++)
+        newVars(R[i], k);
+
+    for(int i=0; i<n-1; i++)
+        addClause({-x[i], R[i][0]});
+
+    for(int j=1; j<k; j++)
+        addClause({-R[0][j]});
+
+    for(int i=1; i<n-1; i++)
+        for(int j=0; j<k; j++)
+            addClause({-R[i-1][j], R[i][j]});
+
+    for(int i=1; i<n-1; i++)
+        for(int j=1; j<k; j++)
+            addClause({-x[i], -R[i-1][j-1], R[i][j]});
+
+    for(int i=1; i<n; i++)
+        addClause({-x[i], -R[i-1][k-1]});
+}
+
+void Formula::atLeastK(int *x, int n, unsigned k)
+{
+    if (k == 1)
+    {
+        addClause(vector<int>(x, x+n));
+        return;
+    }
+    int y[n];
+    for(int i=0; i<n; i++)
+        y[i] = -x[i];
+    atMostK(y, n, n-k);
+}
+
+void Formula::exactlyK(int *x, int n, unsigned k)
+{
+    if (pbMethod == ADDER_NETWORK_FA)
+        cardinality_fulladder(x, n, k);
+    else if (pbMethod == ADDER_NETWORK_ESPRESSO)
+        cardinality_espresso(x, n, k);
+    else {
+        atMostK(x, n, k);
+        atLeastK(x, n, k);
     }
 }
 
