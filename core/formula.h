@@ -6,6 +6,7 @@
 #include <map>
 #include <queue>
 #include <algorithm>
+#include <stdexcept>
 
 using namespace std;
 
